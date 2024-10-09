@@ -44,21 +44,15 @@
           </array>
       </dict>
   </array>
+
   ```
 
 - Ios Oauth Key를 reverse 해서 작성
 
-````xml
 <key>GIDClientID</key>
 <string>${clientIosKey-Reverse}</string>
 
-
-
-
-2. Ios Oauth Key를 reverse 해서 작성
-```xml
-   <key>GIDClientID</key>
-   <string>${clientIosKey-Reverse}</string>
+````
 
 ---
 
@@ -66,10 +60,10 @@
 
 ```javascript
 let googleClientId = this.platform.is('ios')
-  ? ${ios Oauth Client Id}
-  : ${android Oauth Client Id};
+? ${ios Oauth Client Id}
+: ${android Oauth Client Id};
 let emailObject = await googleLogin.googleLogin({
-  googleClientId,
+googleClientId,
 });
 
 console.log(emailObject.email);
