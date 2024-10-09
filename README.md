@@ -5,9 +5,9 @@
 ### 1. Google Developers Setup
 
 - **Google Developers** 사이트에서 설정을 시작합니다.  
-  [Google Cloud console](https://console.cloud.google.com/apis/)
+  [Google Cloud Console](https://console.cloud.google.com/apis/)
 
-#### 1.1 developer 설정
+#### 1.1 Developer 설정
 
 1. **OAuth 동의 화면**
 
@@ -22,37 +22,36 @@
 
 #### 2.1 Android 설정
 
-- Android 설정 해당 사항이 없습니다. (X)
+- Android 설정은 해당 사항이 없습니다. (X)
 
 #### 2.2 iOS 설정
 
 1. **Xcode > info.plist**
 
-- 추가 내용:
+   - 추가 내용:
 
-  ```xml
-  <key>CFBundleURLTypes</key>
-  <array>
-      <dict>
-          <key>CFBundleTypeRole</key>
-          <string>Editor</string>
-          <key>CFBundleURLName</key>
-          <string></string>
-          <key>CFBundleURLSchemes</key>
-          <array>
-              <string>${clientIosKey}</string>
-          </array>
-      </dict>
-  </array>
+   ```xml
+   <key>CFBundleURLTypes</key>
+   <array>
+       <dict>
+           <key>CFBundleTypeRole</key>
+           <string>Editor</string>
+           <key>CFBundleURLName</key>
+           <string></string>
+           <key>CFBundleURLSchemes</key>
+           <array>
+               <string>${clientIosKey}</string>
+           </array>
+       </dict>
+   </array>
+   ```
 
-  ```
+   - **iOS OAuth Key를 reverse 해서 작성**
 
-- Ios Oauth Key를 reverse 해서 작성
-
-<key>GIDClientID</key>
-<string>${clientIosKey-Reverse}</string>
-
-````
+   ```xml
+   <key>GIDClientID</key>
+   <string>${clientIosKey-Reverse}</string>
+   ```
 
 ---
 
@@ -60,11 +59,12 @@
 
 ```javascript
 let googleClientId = this.platform.is('ios')
-? ${ios Oauth Client Id}
-: ${android Oauth Client Id};
+  ? '${ios Oauth Client Id}'
+  : '${android Oauth Client Id}';
+
 let emailObject = await googleLogin.googleLogin({
-googleClientId,
+  googleClientId,
 });
 
 console.log(emailObject.email);
-````
+```
