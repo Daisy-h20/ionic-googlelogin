@@ -1,37 +1,76 @@
-# google-login
+# Google Login Plugin
 
-knc google login plugin
+## Setting Up
 
-## Install
+### 1. Google Developers Setup
 
-```bash
-npm install google-login
-npx cap sync
-```
+- **Google Developers** 사이트에서 설정을 시작합니다.  
+  [Google Cloud console](https://console.cloud.google.com/apis/)
 
-## API
+#### 1.1 developer 설정
 
-<docgen-index>
+1. **OAuth 동의 화면**
 
-* [`googleLogin(...)`](#googlelogin)
+   - 필수 작성
+   - 사용자 유형: 외부
+   - 민감하지 않은 범위: `../auth/userinfo.email`, `.../auth/userinfo.profile`, `openid` 설정
 
-</docgen-index>
+2. **Credentials**
+   - OAuth 2.0 Client IDs를 Android, iOS 각각 생성합니다.
 
-<docgen-api>
-<!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
+### 2. Google Plugin 설정
 
-### googleLogin(...)
+#### 2.1 Android 설정
 
-```typescript
-googleLogin(options: { googleClientId: string; }) => Promise<{ email: string; }>
-```
+- Android 설정 해당 사항이 없습니다. (X)
 
-| Param         | Type                                     |
-| ------------- | ---------------------------------------- |
-| **`options`** | <code>{ googleClientId: string; }</code> |
+#### 2.2 iOS 설정
 
-**Returns:** <code>Promise&lt;{ email: string; }&gt;</code>
+1. **Xcode > info.plist**
 
---------------------
+- 추가 내용:
 
-</docgen-api>
+  ```xml
+  <key>CFBundleURLTypes</key>
+  <array>
+      <dict>
+          <key>CFBundleTypeRole</key>
+          <string>Editor</string>
+          <key>CFBundleURLName</key>
+          <string></string>
+          <key>CFBundleURLSchemes</key>
+          <array>
+              <string>${clientIosKey}</string>
+          </array>
+      </dict>
+  </array>
+  ```
+
+- Ios Oauth Key를 reverse 해서 작성
+
+````xml
+<key>GIDClientID</key>
+<string>${clientIosKey-Reverse}</string>
+
+
+
+
+2. Ios Oauth Key를 reverse 해서 작성
+```xml
+   <key>GIDClientID</key>
+   <string>${clientIosKey-Reverse}</string>
+
+---
+
+## Usage Example
+
+```javascript
+let googleClientId = this.platform.is('ios')
+  ? ${ios Oauth Client Id}
+  : ${android Oauth Client Id};
+let emailObject = await googleLogin.googleLogin({
+  googleClientId,
+});
+
+console.log(emailObject.email);
+````
