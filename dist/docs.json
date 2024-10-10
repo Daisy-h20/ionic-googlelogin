@@ -1,0 +1,31 @@
+{
+  "api": {
+    "name": "googleLoginPlugin",
+    "slug": "googleloginplugin",
+    "docs": "",
+    "tags": [],
+    "methods": [
+      {
+        "name": "googleLogin",
+        "signature": "(options: { googleClientId: string; }) => Promise<{ email: string; }>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ googleClientId: string; }"
+          }
+        ],
+        "returns": "Promise<{ email: string; }>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "googlelogin"
+      }
+    ],
+    "properties": []
+  },
+  "interfaces": [],
+  "enums": [],
+  "typeAliases": [],
+  "pluginConfigs": []
+}
