@@ -1,12 +1,18 @@
 package plugin.googlelogin.knc;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerFuture;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
+import androidx.activity.result.ActivityResult;
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -18,44 +24,63 @@ import com.google.android.gms.tasks.Task;
 @CapacitorPlugin(name = "googleLogin")
 public class googleLoginPlugin extends Plugin {
 
-    private static PluginCall googleCall;
-    private GoogleSignInClient mGoogleSignInClient;
+    // see https://developers.google.com/android/reference/com/google/android/gms/auth/api/signin/GoogleSignInStatusCodes#SIGN_IN_CANCELLED
+    private static final int SIGN_IN_CANCELLED = 12501;
+
+    private GoogleSignInClient googleSignInClient;
+
+    public void loadSignInClient(String clientId) {
+        Log.d("googleLogin", "loadSignInClient: " + clientId);
+        GoogleSignInOptions.Builder googleSignInBuilder = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(clientId)
+            .requestEmail();
+
+        GoogleSignInOptions googleSignInOptions = googleSignInBuilder.build();
+        googleSignInClient = GoogleSignIn.getClient(this.getContext(), googleSignInOptions);
+    }
+
+    @Override
+    public void load() {}
 
     @PluginMethod
     public void googleLogin(PluginCall call) {
-        googleCall = call;
+        String googleClientId = call.getString("googleClientId");
 
-        String googleClientId = googleCall.getString("googleClientId");
+        Log.d("googleLogin", "googleLogin: " + googleClientId);
+        loadSignInClient(googleClientId);
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(googleClientId) // Google Client ID를 여기에 입력하세요.
-            .requestEmail()
-            .build();
-
-        mGoogleSignInClient = GoogleSignIn.getClient(getActivity(), gso);
-        mGoogleSignInClient.signOut(); // 이전 세션 로그아웃
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        getActivity().startActivityForResult(signInIntent, 1818);
-    }
-
-    public void handleGoogleSignInResult(Intent data) {
-        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-        try {
-            GoogleSignInAccount account = task.getResult(ApiException.class);
-            returnGoogleLogin(account.getEmail());
-        } catch (ApiException e) {
-            Log.e("SocialLoginPlugin", "Login failed: " + e.getStatusCode() + " " + e.getMessage());
-            googleCall.reject("로그인 실패: " + e.getMessage());
+        if (googleSignInClient == null) {
+            rejectWithNullClientError(call);
+            return;
         }
+
+        Intent signInIntent = googleSignInClient.getSignInIntent();
+        startActivityForResult(call, signInIntent, "signInResult");
     }
 
-    public void returnGoogleLogin(String email) {
-        if (email != null) {
+    @ActivityCallback
+    protected void signInResult(PluginCall call, ActivityResult result) {
+        if (call == null) return;
+
+        Task<GoogleSignInAccount> completedTask = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            String email = account.getEmail();
+
             JSObject ret = new JSObject();
             ret.put("email", email);
-            googleCall.resolve(ret);
-        } else {
-            googleCall.reject("하영님에게 문의하세요");
+            call.resolve(ret);
+        } catch (ApiException e) {
+            if (SIGN_IN_CANCELLED == e.getStatusCode()) {
+                call.reject("The user canceled the sign-in flow.", "" + e.getStatusCode());
+            } else {
+                call.reject("Something went wrong", "" + e.getStatusCode());
+            }
         }
+    }
+
+    private void rejectWithNullClientError(final PluginCall call) {
+        call.reject("Google services are not ready. Please call initialize() first");
     }
 }
